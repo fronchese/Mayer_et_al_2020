@@ -1,0 +1,34 @@
+# Sam Old 
+# docker container to run STAR aligner 2.7.1a to map intron/exon data to old FR dataset
+FROM ubuntu
+MAINTAINER Samuel I. Old <samold16@gmail.com>
+
+LABEL \
+	description=“STAR 2.7.1a Aligner for use in Exon-Intron Split Analysis”
+
+# Update repo sources list
+RUN apt-get update
+
+# Installations required
+RUN apt-get install —yes \
+ build-essential \ 
+ gcc-multilib \
+ apt-utils \
+ zlib1g-dev
+
+# Install Git
+RUN apt-get install -y git
+
+# Install STAR 2.7.1a
+WORKDIR /usr/local/
+RUN pwd
+RUN git clone https://github.com/alexdobin/STAR.git
+WORKDIR /usr/local/STAR/
+RUN pwd
+RUN git checkout 2.7.1a
+WORKDIR /usr/local/STAR/source
+RUN pwd
+RUN make STAR
+ENV PATH /usr/local/STAR/source:$PATH
+
+# EOF
