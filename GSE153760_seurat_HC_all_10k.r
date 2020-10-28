@@ -90,12 +90,9 @@ for(cellOrigin in samplesToFetch){
         hc.list[[cellOrigin]];
 }
 
-## dammit... I used 'nFeature_RNA < 6000' instead of 'nCount_RNA < 6000'
-
 pdf("Cluster_features_vs_counts_RNA_2020-09-16.pdf", width=11, height=8);
 VlnPlot(seur.obj, features=c("nFeature_RNA", "nCount_RNA", "percent.mt"),
         ncol=3, pt.size=0);
-
 
 pdf(sprintf("Cluster_features_vs_counts_orig_RNA_%s.pdf", Sys.Date()), width=11, height=8);
 print(FeatureScatter(seur.obj, feature1="nCount_RNA", feature2="nFeature_RNA",
@@ -108,7 +105,6 @@ hc.features <-
     SelectIntegrationFeatures(object.list=hc.list,
                               nfeatures=3000, fvf.nfeatures=3000);
 Sys.time();
-
 
 ## fast
 hc.list <-
@@ -124,13 +120,11 @@ hc.anchors <-
                            verbose=TRUE);
 Sys.time();
 
-
 ## takes ~10 mins
 Sys.time();
 hc.all <- IntegrateData(anchorset=hc.anchors,
                         normalization.method="SCT", verbose=TRUE);
 Sys.time();
-
 
 ## Set default searched matrix to the integrated data
 DefaultAssay(hc.all) <- "integrated";
@@ -158,7 +152,6 @@ png(sprintf("JackStraw_SCT_HCall_10k_%s.png", format(Sys.Date())),
     width=1600, height=800);
 JackStrawPlot(hc.all, dims=1:100, ymax=0.5, xmax=0.2);
 invisible(dev.off());
-
 
 plot(qqnorm(JS(hc.all[["pca"]], slot = "empirical")[,1]), pch="",
      xlim=c(0,0.5), ylim=c(0,0.2));
@@ -341,6 +334,8 @@ DimPlot(hc.all, cols=cluster.cols, split.by="ident",
 invisible(dev.off());
 
 
+## [400 epochs looks the best in terms of separation of DCs]
+
 
 missing <- c("IL5", "IL17A");
 
@@ -422,17 +417,6 @@ for(ci in levels(Idents(hc.all))){
           theme(text=element_text(size=30)))
 }
 invisible(dev.off());
-
-## png(sprintf("Feature_preferred_UMAP_T-Cells_SCT_HCall_%s_%%02d.png",
-##            format(Sys.Date())),
-##     width=1600, height=1200);
-## for(pi in seq(1, length(preferred.genes), by=12)){
-##     pn <- preferred.genes[pi:min(length(preferred.genes), (pi+11))];
-##     print(FeaturePlot(sub.hc.TCs, slot="data", col=c("lightgrey", "#e31836"),
-##                       features=pn, order=TRUE, pt.size=1));
-## }
-## invisible(dev.off());
-
 
 ## Determine descriptive genes
 comp.list.20 <- NULL;
@@ -550,7 +534,6 @@ map_dfr(as.character(unique(Idents(hc.no11))), function(x){
 }) -> marker.DE.tbl;
 
 write_csv(marker.DE.tbl, "/mnt/BigBirdStornext/R_data/RStudioProjects/Seurat/JACI/DEtable_10k_no11.csv.gz");
-
 
 ## Fetch new cluster assignments
 library(readxl);
@@ -818,9 +801,6 @@ diffFileName <-
 cat("** Most-distinguishing cluster genes **\n", file=diffFileName);
 for(cl in unique(hccs)){
     print(cl);
-    ## Hey, David!
-    ## Remember that subsampling thing you did for your PhD?
-    ## ** You should try that here! **
     hc.sub <- apply(DC.assayData[,hccs == cl], 1, median, na.rm=TRUE);
     hc.other <- apply(DC.assayData[,hccs != cl], 1, median, na.rm=TRUE);
     gene.diffRanked <- hc.sub - hc.other;
@@ -856,7 +836,6 @@ for(pi in seq(1, length(features.DCs), by=12)){
                       features=pn, order=TRUE, pt.size=1));
 }
 invisible(dev.off());
-
 
 ### Process T-Cell subsets
 
@@ -941,9 +920,6 @@ diffFileName <-
 cat("** Most-distinguishing cluster genes **\n", file=diffFileName);
 for(cl in unique(hccs)){
     print(cl);
-    ## Hey, David!
-    ## Remember that subsampling thing you did for your PhD?
-    ## ** You should try that here! **
     hc.sub <- apply(TC.assayData[,hccs == cl], 1, median, na.rm=TRUE);
     hc.other <- apply(TC.assayData[,hccs != cl], 1, median, na.rm=TRUE);
     gene.diffRanked <- hc.sub - hc.other;
@@ -984,7 +960,6 @@ invisible(dev.off());
 
 
 ## Additional experimentation with cluster 11
-
 
 hc.cl11s <- subset(hc.all, idents=c("11"));
 DefaultAssay(hc.cl11s) <- "integrated";
@@ -1033,8 +1008,6 @@ DimPlot(hc.cl11s,
     theme(text=element_text(size=30))
 invisible(dev.off());
 
-
-
 cl11.cells <- which(Idents(hc.all) == "11");
 
 hc.cl11 <- subset(hc.all, idents="11");
@@ -1044,13 +1017,9 @@ cl11.mat <-  GetAssayData(subset(hc.all, idents="11"), slot="scale.data");
 cl14.mat <-  GetAssayData(subset(hc.all, idents="14"), slot="scale.data");
 cl7.mat <-  GetAssayData(subset(hc.all, idents="7"), slot="scale.data");
 
-
 pdf(sprintf("plot_cluster11_10k_%s.pdf",
             format(Sys.Date())), width=12, height=6);
 par(mfrow=c(2,3));
-## plot(density(cl11.mat["MT-CO3",]));
-## plot(density(cl14.mat["MT-CO3",]));
-## plot(density(cl7.mat["MT-CO3",]));
 plot(density(cl11.mat["KRT1",]));
 plot(density(cl14.mat["KRT1",]));
 plot(density(cl7.mat["KRT1",]));
